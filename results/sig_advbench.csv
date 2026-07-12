@@ -1,0 +1,13 @@
+n,b_mtp_only,c_base_only,statistic,p_value,risk_difference,odds_ratio,victim,baseline,q_value_bh,sig_0.05
+20,2,3,2.0,1.0,-0.04999999999999999,0.6666666666666666,gpt-3.5,direct,1.0,False
+20,1,8,1.0,0.0390625,-0.35,0.125,gpt-3.5,paps,0.234375,False
+20,1,4,1.0,0.375,-0.15,0.25,gpt-3.5,pair,0.75,False
+20,2,0,0.0,0.5,0.1,inf,gpt-4o,direct,0.75,False
+20,2,0,0.0,0.5,0.1,inf,gpt-4o,paps,0.75,False
+20,0,5,0.0,0.0625,-0.24999999999999997,0.0,gpt-4o,pair,0.25,False
+20,1,0,0.0,1.0,0.05,inf,claude,direct,1.0,False
+20,1,0,0.0,1.0,0.05,inf,claude,paps,1.0,False
+20,1,4,1.0,0.375,-0.15000000000000002,0.25,claude,pair,0.75,False
+20,6,0,0.0,0.03125,0.3,inf,deepseek,direct,0.234375,False
+20,5,2,2.0,0.453125,0.15,2.5,deepseek,paps,0.75,False
+20,4,3,3.0,1.0,0.04999999999999999,1.3333333333333333,deepseek,pair,1.0,False

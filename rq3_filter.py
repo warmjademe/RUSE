@@ -106,19 +106,8 @@ def main():
     outp.parent.mkdir(parents=True, exist_ok=True)
     summary = {"victim": args.victim, "infile": args.infile, "denom": denom,
                "n_winners": len(winners), "tau": args.tau, "defenses": {}}
-    # resume/merge: keep defenses already computed in an existing output file
-    if outp.exists():
-        try:
-            prev = json.loads(outp.read_text())
-            summary["defenses"].update(prev.get("defenses", {}))
-        except Exception:  # noqa: BLE001
-            pass
 
     for dname in args.defenses.split(","):
-        if dname in summary["defenses"]:
-            d = summary["defenses"][dname]
-            print(f"==> {args.victim} {dname}: already done, survive {d['survive']}/{d['denom']} ASR={d['asr']} (skip)", flush=True)
-            continue
         dv = DefendedVictim(base, dname)
         survive = 0
         details = []

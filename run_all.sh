@@ -5,7 +5,7 @@
 # Commercial victims run FIRST (fast, network-bound; map to the paper tables),
 # open-source victims SECOND (slower, local GPU) as added breadth.
 set -u
-BARK="https://api.day.app/<BARK_KEY>"
+BARK="https://api.day.app/cP9CYz8mEM8dsSxRH6BpKJ"
 cd ~/TongBu/mtp_rebuttal/source_codes || exit 1
 source ~/miniconda3/etc/profile.d/conda.sh; conda activate mtp
 export HF_ENDPOINT=https://hf-mirror.com

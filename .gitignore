@@ -1,8 +1,8 @@
-# never commit secrets or bulky/raw-harmful artifacts
 configs/secrets.env
-.env
-runs/**/*.jsonl
+runs_sft/
+runs_grpo/
+data/sources/
+data/bundled/
 data/cache/
-**/__pycache__/
+__pycache__/
 *.pyc
-release/raw_completions/     # withheld harmful completions (dual-use)
