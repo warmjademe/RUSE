@@ -116,6 +116,19 @@ python -m mtp.sft_data                 # aggregate public datasets -> data/sft/p
 python -m mtp.sft_train                # QLoRA SFT of Qwen 2.5 7B Instruct -> runs_sft/attacker
 ```
 
+### Where the trained adapter lives
+The fine-tuned attack-generator adapter (`runs_sft/attacker`) is **not included in
+this repository**. Because it is an offensive dual-use artifact, it is deposited
+under **restricted access** on Zenodo:
+
+- DOI: **10.5281/zenodo.21320757** — <https://doi.org/10.5281/zenodo.21320757>
+
+The record's metadata is public, but the adapter files are gated: verified
+researchers must log in and request access, granted by the authors on a
+case-by-case basis for defensive and robustness research only. Once obtained,
+unpack it to `runs_sft/attacker` and point `MTP_ATTACKER_ADAPTER` at it (below);
+alternatively, retrain it from scratch with the two commands above.
+
 ## Stage 2 — per-target search (RQ1, RUSE full method)
 ```bash
 export MTP_ATTACKER_ADAPTER=runs_sft/attacker
@@ -185,10 +198,12 @@ release the following redaction was applied:
   experimental record stays auditable.
 - Aggregate summaries (`runs_rq3/*.json`): judge scores and success/blocked flags
   only — no prompts or responses.
-- Excluded entirely: real API keys (`configs/secrets.env`; use
-  `configs/secrets.env.template`), the unalignment QLoRA adapter (`runs_sft/`), the
-  raw harmful-goal corpora (obtain AdvBench / HarmBench / SORRY-Bench from their
-  original public releases), and the LLM response cache.
+- Excluded from this repository: real API keys (`configs/secrets.env`; use
+  `configs/secrets.env.template`), the unalignment QLoRA adapter (`runs_sft/`;
+  deposited under restricted access on Zenodo, DOI 10.5281/zenodo.21320757, and
+  available to verified researchers on request — see "Where the trained adapter
+  lives" above), the raw harmful-goal corpora (obtain AdvBench / HarmBench /
+  SORRY-Bench from their original public releases), and the LLM response cache.
 
 ## Responsible use
 This code reproduces a jailbreak attack for defensive and robustness research
