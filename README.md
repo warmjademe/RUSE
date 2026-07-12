@@ -75,6 +75,41 @@ cp configs/secrets.env.template configs/secrets.env   # fill OPENAI_PROXY_KEY
 ollama pull llama3-mtp gemma3-mtp mistral-mtp qwen-mtp   # local victims + attacker (or base tags + Modelfiles)
 ```
 
+## Aggregated fine-tuning dataset (Stage 1 input)
+The unalignment corpus aggregates nine publicly available jailbreak and
+persuasion datasets. Two files under `data/sft/` capture it, both in the
+`{messages, query, strategy, completion, meta}` SFT format:
+- `pool.jsonl` — verified in-house examples (successful attack turns harvested
+  during development).
+- `public.jsonl` — 25,545 records aggregated from the public sources below.
+
+| Source | Records |
+|---|---|
+| sevdeawesome/jailbreak_success | 9,880 |
+| allenai/wildjailbreak | 8,000 |
+| JailbreakV-28K | 4,999 |
+| verazuo/jailbreak_llms (in-the-wild) | 1,358 |
+| JailbreakBench/artifacts | 858 |
+| EasyJailbreak (seed templates) | 234 |
+| deadbits/vigil-jailbreak-ada-002 | 96 |
+| jackhhao/jailbreak-classification | 78 |
+| rubend18/ChatGPT-Jailbreak-Prompts | 42 |
+| **Total** | **25,545** |
+
+**Release form — reconstruction, not raw redistribution.** All nine sources are
+already public. To avoid redistributing aggregated attack content, the released
+`data/sft/*.jsonl` keep only provenance — the benchmark `query`, the `strategy`
+label, and `meta.source` — while the raw `messages` and `completion` (the
+formatted attack prompt and its target) are replaced with a
+`[REDACTED sha256:<hash> len:<n>]` stub. Rebuild the exact corpus from the
+original public releases with the deterministic collection script:
+```bash
+python -m mtp.sft_data     # re-fetch the sources above and re-aggregate -> data/sft/pool.jsonl
+```
+Obtain each source dataset from its original public location (HuggingFace /
+GitHub) under its own license; `mtp/sft_data.py` documents the exact fetch and
+normalization per source.
+
 ## Stage 1 — unalignment (build the reusable attacker)
 ```bash
 python -m mtp.sft_data                 # aggregate public datasets -> data/sft/pool.jsonl
