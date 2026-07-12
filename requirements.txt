@@ -1,0 +1,19 @@
+# Orchestration / API / stats (CPU) — the "mtp" conda env
+numpy
+pandas
+scipy
+statsmodels        # Wilson CI (proportion_confint), McNemar, multipletests (BH-FDR)
+matplotlib
+seaborn
+tqdm
+requests
+httpx
+tenacity           # API retry with backoff
+datasets           # pull AdvBench / HarmBench / SORRY-Bench
+huggingface_hub
+python-dotenv
+orjson
+pyyaml
+
+# Attacker PPO / QLoRA fine-tuning (GPU, RTX 4090) — installed separately
+# torch (cu121), transformers, trl, peft, accelerate, bitsandbytes, sentencepiece, einops
