@@ -1,10 +1,18 @@
 # Experiment-level settings for the revision runs.
+# N=100 distinct goals per benchmark, sampled ONCE with the fixed seed so that
+# every (victim x attack) cell is evaluated on the SAME 100 goals (required for
+# the paired McNemar test). full_n is the size of the public source set the 100
+# are drawn from; it is documentation only and is NOT the evaluation N.
 datasets:
-  advbench:   {n_sample: 20, full_n: 520, seed: 20260709}
-  harmbench:  {n_sample: 20, full_n: 200, seed: 20260709}
-  sorrybench: {n_sample: 20, full_n: 440, seed: 20260709}
+  advbench:   {n_sample: 100, full_n: 520, seed: 20260709}
+  harmbench:  {n_sample: 100, full_n: 200, seed: 20260709}
+  # SORRY-Bench dropped: Reviewer Point 12 named only AdvBench + HarmBench; the
+  # third benchmark was a voluntary over-commitment in the draft response and is
+  # not required. AdvBench + HarmBench at N=100 with CIs satisfies the comment.
 
-replicates: 3            # R independent runs per (attack x victim x dataset) cell (E2)
+replicates: 1            # single pass over the 100 distinct goals; ASR = solved/100
+                         # (repeating the same goals does NOT increase the effective
+                         # sample size, so the Wilson CI / McNemar use N=100)
 attacker_temperature: 1.0
 victim_temperature: 0.0  # victim decoding; kept fixed & recorded for reproducibility
 max_turns: 10            # T, multi-turn budget: MTP escalates over many turns; the

@@ -1,11 +1,5 @@
-% ASR on advbench (N per cell in results/asr_advbench.csv), 95%% Wilson CI in brackets; all cells re-run under identical victim/query/judge conditions.
-\begin{tabular}{lccccccc}
-\toprule
-Model & direct & paps & pair & gcg-t & stinger & xjailbreak & mtp \\
-\midrule
-gpt-3.5 & 0.15 [0.05,0.36] & 0.45 [0.26,0.66] & 0.25 [0.11,0.47] & -- & -- & -- & 0.10 [0.03,0.30] \\
-gpt-4o & 0.00 [0.00,0.16] & 0.00 [0.00,0.16] & 0.35 [0.18,0.57] & -- & -- & -- & 0.10 [0.03,0.30] \\
-claude & 0.00 [0.00,0.16] & 0.00 [0.00,0.16] & 0.20 [0.08,0.42] & -- & -- & -- & 0.05 [0.01,0.24] \\
-deepseek & 0.00 [0.00,0.16] & 0.15 [0.05,0.36] & 0.25 [0.11,0.47] & -- & -- & -- & 0.30 [0.15,0.52] \\
-\bottomrule
-\end{tabular}
+Llama 3      & \makecell{0.00\\{\scriptsize[.00,.04]}} & \makecell{0.21\\{\scriptsize[.14,.30]}} & \makecell{0.04\\{\scriptsize[.02,.10]}} & \makecell{0.03\\{\scriptsize[.01,.08]}} & \makecell{0.07\\{\scriptsize[.03,.14]}} & \makecell{\textbf{0.54}\\{\scriptsize[.44,.63]}} & $<$.001 \\
+Gemma 3      & \makecell{0.04\\{\scriptsize[.02,.10]}} & \makecell{0.10\\{\scriptsize[.06,.17]}} & \makecell{0.07\\{\scriptsize[.03,.14]}} & \makecell{0.04\\{\scriptsize[.02,.10]}} & \makecell{0.07\\{\scriptsize[.03,.14]}} & \makecell{\textbf{1.00}\\{\scriptsize[.96,1.00]}} & $<$.001 \\
+Mistral Nemo & \makecell{0.39\\{\scriptsize[.30,.49]}} & \makecell{0.31\\{\scriptsize[.23,.41]}} & \makecell{0.68\\{\scriptsize[.58,.76]}} & \makecell{0.29\\{\scriptsize[.21,.39]}} & \makecell{0.13\\{\scriptsize[.08,.21]}} & \makecell{\textbf{1.00}\\{\scriptsize[.96,1.00]}} & $<$.001 \\
+GPT-4o mini  & \makecell{0.06\\{\scriptsize[.03,.12]}} & \makecell{0.21\\{\scriptsize[.14,.30]}} & \makecell{0.02\\{\scriptsize[.01,.07]}} & \makecell{0.02\\{\scriptsize[.01,.07]}} & \makecell{0.08\\{\scriptsize[.04,.15]}} & \makecell{\textbf{0.90}\\{\scriptsize[.83,.94]}} & $<$.001 \\
+DeepSeek     & \makecell{0.05\\{\scriptsize[.02,.11]}} & \makecell{0.24\\{\scriptsize[.17,.33]}} & \makecell{0.13\\{\scriptsize[.08,.21]}} & \makecell{0.10\\{\scriptsize[.06,.17]}} & \makecell{0.20\\{\scriptsize[.13,.29]}} & \makecell{\textbf{1.00}\\{\scriptsize[.96,1.00]}} & $<$.001 \\

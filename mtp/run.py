@@ -14,6 +14,7 @@ python -m mtp.run --all
 """
 from __future__ import annotations
 import argparse, time, pathlib
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 
 from .common import load_yaml, append_jsonl, read_jsonl, ROOT
@@ -28,7 +29,10 @@ RUNS = ROOT / "runs"
 
 def _dispatch(attack: str, query: str, victim, cfg) -> AttackResult:
     if attack == "mtp":
-        return run_mtp(query, victim, cfg=cfg)
+        # RUSE = the evolutionary per-target search (Algorithm 1). attack_mtp.run_mtp
+        # is the earlier fixed-strategy chat and is deliberately not used here.
+        from .attack_evolve import run_evolve
+        return run_evolve(query, victim, cfg=cfg)
     if attack in B.REGISTRY:
         return B.REGISTRY[attack](query, victim)
     # gcg-t / stinger / xjailbreak: ingest external prompts and replay uniformly
@@ -61,6 +65,12 @@ def main():
     ap.add_argument("--reps", type=int, default=None)
     ap.add_argument("--defense", default="none", choices=list(DEFENSES), help="wrap victims in this defense")
     ap.add_argument("--all", action="store_true", help="use configs/experiment.yaml lists")
+    ap.add_argument("--limit", type=int, default=None,
+                    help="use only the first N sampled goals (pilot); a prefix of the "
+                         "full sample, so results roll into the full run via resume")
+    ap.add_argument("--workers", type=int, default=1,
+                    help="concurrent goals per cell (I/O-bound victim/judge overlap; "
+                         "HF-adapter generate is serialised). Results are unchanged.")
     args = ap.parse_args()
 
     mcfg = load_yaml("models.yaml")
@@ -80,6 +90,8 @@ def main():
 
     for ds in datasets:
         items = load_sample(ds, exp)
+        if args.limit:
+            items = items[:args.limit]
         print(f"[{ds}] {len(items)} queries")
         for vk in vics:
             victim = victims[vk]
@@ -89,24 +101,35 @@ def main():
             for attack in attacks:
                 path = RUNS / ds / pathkey / f"{attack}.jsonl"
                 done = _done(path)
-                for rep in range(reps):
-                    for it in items:
-                        if (it["id"], rep) in done:
-                            continue
-                        t0 = time.time()
-                        try:
-                            res = _dispatch(attack, it["query"], victim, mcfg)
-                            rec = asdict(res)
-                        except Exception as e:  # noqa: BLE001 — log & continue
-                            rec = {"attack": attack, "query": it["query"], "victim": vk,
-                                   "success": False, "final_score": 0.0, "error": str(e)[:300],
-                                   "turns": [], "n_victim_calls": 0}
-                        rec.update({"query_id": it["id"], "rep": rep, "dataset": ds,
-                                    "seconds": round(time.time() - t0, 2)})
-                        append_jsonl(path, rec)
-                        ok = "OK" if rec.get("success") else "no"
-                        print(f"  {ds}/{vk}/{attack} rep{rep} {it['id']}: "
-                              f"{ok} S={rec.get('final_score')} ({rec['seconds']}s)")
+
+                def _one(it, rep, attack=attack, victim=victim, vk=vk, ds=ds, path=path):
+                    # goals are independent; victims are greedy (deterministic) and the
+                    # attacker's randomness is per-goal, so running goals concurrently
+                    # does not change results, only wall-clock. The single HF-adapter
+                    # generate is serialised inside llm_client; victim/judge I/O overlaps.
+                    t0 = time.time()
+                    try:
+                        res = _dispatch(attack, it["query"], victim, mcfg)
+                        rec = asdict(res)
+                    except Exception as e:  # noqa: BLE001 — log & continue
+                        rec = {"attack": attack, "query": it["query"], "victim": vk,
+                               "success": False, "final_score": 0.0, "error": str(e)[:300],
+                               "turns": [], "n_victim_calls": 0}
+                    rec.update({"query_id": it["id"], "rep": rep, "dataset": ds,
+                                "seconds": round(time.time() - t0, 2)})
+                    append_jsonl(path, rec)   # thread-safe (per-path lock in common)
+                    ok = "OK" if rec.get("success") else "no"
+                    print(f"  {ds}/{vk}/{attack} rep{rep} {it['id']}: "
+                          f"{ok} S={rec.get('final_score')} ({rec['seconds']}s)", flush=True)
+
+                jobs = [(it, rep) for rep in range(reps) for it in items
+                        if (it["id"], rep) not in done]
+                if args.workers > 1:
+                    with ThreadPoolExecutor(max_workers=args.workers) as ex:
+                        list(ex.map(lambda a: _one(*a), jobs))
+                else:
+                    for it, rep in jobs:
+                        _one(it, rep)
 
 
 if __name__ == "__main__":

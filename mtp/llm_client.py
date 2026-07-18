@@ -122,35 +122,40 @@ class Client:
 
 
 # ---- in-process HF backend for the GRPO-trained attacker (4-bit + LoRA) ------
+import threading as _threading
 _HF_CACHE: dict = {}
+_HF_LOCK = _threading.Lock()   # PyTorch generate is not thread-safe; serialise it
 BASE_ATTACKER = "Qwen/Qwen2.5-7B-Instruct"
 
 
 def _hf_local_generate(adapter_dir: str, messages: list[dict], temperature: float, max_tokens: int) -> str:
     import torch
     if adapter_dir not in _HF_CACHE:
-        from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-        from peft import PeftModel
-        tok = AutoTokenizer.from_pretrained(BASE_ATTACKER)
-        if tok.pad_token is None:
-            tok.pad_token = tok.eos_token
-        bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                                 bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
-        m = AutoModelForCausalLM.from_pretrained(BASE_ATTACKER, quantization_config=bnb, device_map="auto")
-        # adapter_dir == "BASE" -> untrained base attacker on the SAME 4-bit backend,
-        # so untrained-vs-trained MTP differs only by the LoRA adapter (clean ablation).
-        if adapter_dir != "BASE":
-            m = PeftModel.from_pretrained(m, adapter_dir)
-        m.eval()
-        _HF_CACHE[adapter_dir] = (tok, m)
+        with _HF_LOCK:                          # double-checked: load the model once
+            if adapter_dir not in _HF_CACHE:
+                from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+                from peft import PeftModel
+                tok = AutoTokenizer.from_pretrained(BASE_ATTACKER)
+                if tok.pad_token is None:
+                    tok.pad_token = tok.eos_token
+                bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                                         bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
+                m = AutoModelForCausalLM.from_pretrained(BASE_ATTACKER, quantization_config=bnb, device_map="auto")
+                # adapter_dir == "BASE" -> untrained base attacker on the SAME 4-bit backend,
+                # so untrained-vs-trained MTP differs only by the LoRA adapter (clean ablation).
+                if adapter_dir != "BASE":
+                    m = PeftModel.from_pretrained(m, adapter_dir)
+                m.eval()
+                _HF_CACHE[adapter_dir] = (tok, m)
     tok, m = _HF_CACHE[adapter_dir]
     prompt = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     ids = tok(prompt, return_tensors="pt").to(m.device)
     import torch as _t
-    with _t.no_grad():
-        out = m.generate(**ids, max_new_tokens=max_tokens, do_sample=temperature > 0,
-                         temperature=max(temperature, 0.01), top_p=0.95,
-                         pad_token_id=tok.eos_token_id)
+    with _HF_LOCK:                              # generate is not thread-safe on one model
+        with _t.no_grad():
+            out = m.generate(**ids, max_new_tokens=max_tokens, do_sample=temperature > 0,
+                             temperature=max(temperature, 0.01), top_p=0.95,
+                             pad_token_id=tok.eos_token_id)
     return tok.decode(out[0][ids["input_ids"].shape[1]:], skip_special_tokens=True).strip()
 
 

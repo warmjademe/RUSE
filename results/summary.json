@@ -1,0 +1,196 @@
+{
+  "advbench": {
+    "llama3": {
+      "n": 100,
+      "ruse_asr": 0.54,
+      "ruse_ci": [
+        0.4426486032336822,
+        0.6343919169097589
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.0,
+        "pair": 0.21,
+        "paps": 0.04,
+        "stinger": 0.03,
+        "xjailbreak": 0.07
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 1.0709118214435875e-06,
+      "cohen_h_vs_strongest": 0.6988142707059101,
+      "mcnemar_q": 1.0709118214435875e-06
+    },
+    "gemma3": {
+      "n": 100,
+      "ruse_asr": 1.0,
+      "ruse_ci": [
+        0.9630065017930143,
+        1.0
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.04,
+        "pair": 0.1,
+        "paps": 0.07,
+        "stinger": 0.04,
+        "xjailbreak": 0.07
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 1.6155871338926322e-27,
+      "cohen_h_vs_strongest": 2.498091544796509,
+      "mcnemar_q": 8.077935669463161e-27
+    },
+    "mistral": {
+      "n": 100,
+      "ruse_asr": 1.0,
+      "ruse_ci": [
+        0.9630065017930143,
+        1.0
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.39,
+        "pair": 0.31,
+        "paps": 0.68,
+        "stinger": 0.29,
+        "xjailbreak": 0.13
+      },
+      "strongest_baseline": "paps",
+      "mcnemar_p": 4.656612873077393e-10,
+      "cohen_h_vs_strongest": 1.2025284333582564,
+      "mcnemar_q": 5.820766091346741e-10
+    },
+    "gpt-4o-mini": {
+      "n": 100,
+      "ruse_asr": 0.9,
+      "ruse_ci": [
+        0.8256343384950865,
+        0.9447708629393249
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.06,
+        "pair": 0.21,
+        "paps": 0.02,
+        "stinger": 0.02,
+        "xjailbreak": 0.08
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 6.098637220230962e-20,
+      "cohen_h_vs_strongest": 1.5460239086738632,
+      "mcnemar_q": 1.0164395367051604e-19
+    },
+    "deepseek": {
+      "n": 100,
+      "ruse_asr": 1.0,
+      "ruse_ci": [
+        0.9630065017930143,
+        1.0
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.05,
+        "pair": 0.24,
+        "paps": 0.13,
+        "stinger": 0.1,
+        "xjailbreak": 0.2
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 2.6469779601696886e-23,
+      "cohen_h_vs_strongest": 2.117647277490841,
+      "mcnemar_q": 6.617444900424221e-23
+    }
+  },
+  "harmbench": {
+    "llama3": {
+      "n": 100,
+      "ruse_asr": 0.5,
+      "ruse_ci": [
+        0.4038315303659956,
+        0.5961684696340044
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.05,
+        "pair": 0.2,
+        "paps": 0.03,
+        "stinger": 0.07,
+        "xjailbreak": 0.09
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 6.038535502739251e-07,
+      "cohen_h_vs_strongest": 0.6435011087932846,
+      "mcnemar_q": 6.038535502739251e-07
+    },
+    "gemma3": {
+      "n": 100,
+      "ruse_asr": 1.0,
+      "ruse_ci": [
+        0.9630065017930143,
+        1.0
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.15,
+        "pair": 0.41,
+        "paps": 0.32,
+        "stinger": 0.17,
+        "xjailbreak": 0.21
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 3.469446951953614e-18,
+      "cohen_h_vs_strongest": 1.751782778041444,
+      "mcnemar_q": 8.673617379884035e-18
+    },
+    "mistral": {
+      "n": 100,
+      "ruse_asr": 1.0,
+      "ruse_ci": [
+        0.9630065017930143,
+        1.0
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.58,
+        "pair": 0.58,
+        "paps": 0.78,
+        "stinger": 0.46,
+        "xjailbreak": 0.15
+      },
+      "strongest_baseline": "paps",
+      "mcnemar_p": 4.76837158203125e-07,
+      "cohen_h_vs_strongest": 0.9764105267938343,
+      "mcnemar_q": 5.960464477539062e-07
+    },
+    "gpt-4o-mini": {
+      "n": 100,
+      "ruse_asr": 0.89,
+      "ruse_ci": [
+        0.8136870349691969,
+        0.9374580364293543
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.11,
+        "pair": 0.3,
+        "paps": 0.16,
+        "stinger": 0.1,
+        "xjailbreak": 0.13
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 5.377642775528102e-17,
+      "cohen_h_vs_strongest": 1.3061826633017233,
+      "mcnemar_q": 8.962737959213504e-17
+    },
+    "deepseek": {
+      "n": 100,
+      "ruse_asr": 1.0,
+      "ruse_ci": [
+        0.9630065017930143,
+        1.0
+      ],
+      "baseline_asr": {
+        "gcg-t": 0.21,
+        "pair": 0.23,
+        "paps": 0.16,
+        "stinger": 0.12,
+        "xjailbreak": 0.14
+      },
+      "strongest_baseline": "pair",
+      "mcnemar_p": 1.3234889800848443e-23,
+      "cohen_h_vs_strongest": 2.1412334361948187,
+      "mcnemar_q": 6.617444900424221e-23
+    }
+  }
+}

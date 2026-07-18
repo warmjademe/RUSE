@@ -22,7 +22,7 @@ from .common import load_yaml, append_jsonl, read_jsonl, ROOT
 from .victims import load_victims
 from .data import load_sample
 from .judge import get_judge
-from .llm_client import get_client, _hf_local_generate, _HF_CACHE
+from .llm_client import get_client, _hf_local_generate, _HF_CACHE, _HF_LOCK
 
 # --------------------------------------------------------------------------- #
 # batched SFT (reverse-alignment) generation
@@ -45,10 +45,11 @@ def sft_batch(adapter, list_msgs, temperature, max_tokens=256, chunk=16):
         batch = list_msgs[i:i + chunk]
         prompts = [tok.apply_chat_template(ms, tokenize=False, add_generation_prompt=True) for ms in batch]
         enc = tok(prompts, return_tensors="pt", padding=True).to(m.device)
-        with torch.no_grad():
-            gen = m.generate(**enc, max_new_tokens=max_tokens,
-                             do_sample=temperature > 0, temperature=max(temperature, 0.01),
-                             top_p=0.95, pad_token_id=tok.eos_token_id)
+        with _HF_LOCK:                              # generate is not thread-safe on one model
+            with torch.no_grad():
+                gen = m.generate(**enc, max_new_tokens=max_tokens,
+                                 do_sample=temperature > 0, temperature=max(temperature, 0.01),
+                                 top_p=0.95, pad_token_id=tok.eos_token_id)
         for j in range(len(batch)):
             new = gen[j][enc["input_ids"].shape[1]:]
             out_texts.append(tok.decode(new, skip_special_tokens=True).strip())
@@ -219,6 +220,38 @@ def evolve_task(it, victim, adapter, judge, tau, rc, log_fn):
 
 DEFAULT_RC = {"n_pool": 16, "n_free": 16, "n_free_evo": 6, "elite": 6, "k_per": 4,
               "gens": 8, "temp": 1.1, "suppress": True}
+
+# RC for the uniform N=100 evaluation driven by run.py. Keeps the full K=16
+# strategy-arm pool (Algorithm 1's core) and a rich gen-0 population, but uses a
+# reduced compute budget (G=4 generations, trimmed per-round population) so the
+# full 5-victim x 100-goal sweep finishes on a single GPU in ~1 day. Per-goal
+# victim calls are bounded by (16+12) + 4*(5*3 + 2 + 4) = 28 + 4*21 = 112.
+_RC_EVAL = {"n_pool": 16, "n_free": 12, "n_free_evo": 4, "elite": 5, "k_per": 3,
+            "gens": 4, "temp": 1.1, "suppress": True}
+
+
+def run_evolve(query, victim, *, cfg=None):
+    """RUSE Stage-2 evolutionary search returned as an AttackResult, so the run.py
+    orchestrator (RQ1/RQ2/RQ3, resume, McNemar goal alignment) can drive it. This
+    is the method the manuscript describes; attack_mtp.run_mtp is the earlier
+    fixed-strategy chat and is NOT used for reported RUSE numbers. Goals are
+    searched one at a time (run.py --workers 1 for mtp); each search is itself
+    concurrent internally (batched generation + parallel victim/judge)."""
+    from .attack_mtp import AttackResult, Turn
+    cfg = cfg or load_yaml("models.yaml")
+    tau = cfg["judges"].get("success_threshold", 5)
+    judge = get_judge()
+    adapter = os.environ.get("MTP_ATTACKER_ADAPTER")
+    assert adapter, "RUSE(mtp) needs MTP_ATTACKER_ADAPTER=runs_sft/attacker"
+    it = {"query": query, "id": "_"}
+    best, calls = evolve_task(it, victim, adapter, judge, tau, _RC_EVAL, log_fn=lambda r: None)
+    return AttackResult(
+        attack="mtp", query=query, victim=getattr(victim, "key", ""),
+        success=bool(best["score"] >= tau), final_score=float(best["score"]),
+        strategy=str(best.get("tag") or ""),
+        turns=[Turn(prompt=best.get("prompt", ""), response=best.get("resp", ""),
+                    score=float(best["score"]))],
+        n_victim_calls=int(calls))
 
 
 def main():
